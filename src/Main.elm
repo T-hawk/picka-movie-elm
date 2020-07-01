@@ -1,12 +1,12 @@
 port module Main exposing (..)
 
 import Alert exposing (Alert(..))
+import Api
 import Browser
 import Browser.Navigation as Nav
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Http
 import Json.Decode as Decode
 import Json.Encode as Encode
 import List.Extra exposing (remove)
@@ -81,11 +81,7 @@ update msg model =
                             Cmd.none
 
                         _ ->
-                            Http.post
-                                { url = "/session/create"
-                                , body = Http.jsonBody (Movie.encodeMovies movies)
-                                , expect = Http.expectString SessionStarted
-                                }
+                            Api.createSession movies
             in
             ( model, cmd )
 
@@ -112,11 +108,7 @@ update msg model =
         SessionEnded ->
             ( { model | page = Results }
             , Cmd.batch
-                [ Http.post
-                    { url = "/session/end"
-                    , body = Http.emptyBody
-                    , expect = Http.expectJson RecievedBestMovie Movie.decodeMovies
-                    }
+                [ Api.stopSession
                 , Nav.pushUrl model.key "/results"
                 ]
             )
@@ -185,7 +177,7 @@ update msg model =
                         SearchOf value ->
                             value
             in
-            ( model, Http.post { url = "/search", body = Http.stringBody "search" search, expect = Http.expectJson RecievedMovies Movie.decodeMovies } )
+            ( model, Api.search search )
 
         SubmittedForm ->
             let
@@ -201,23 +193,11 @@ update msg model =
 
                 _ =
                     Debug.log "alerts" alerts
-
-                encodedUser =
-                    case model.session.form of
-                        UserForm value ->
-                            User.encodeUser value
-
-                        _ ->
-                            User.encodeUser User.defaultFormUser
             in
             if List.isEmpty alerts then
                 ( { model | page = Home, session = Models.updateAlerts model.session [] }
                 , Cmd.batch
-                    [ Http.post
-                        { url = "/api/login"
-                        , body = Http.jsonBody encodedUser
-                        , expect = Http.expectJson RecievedUser decodeUser
-                        }
+                    [ Api.login model.session.form
                     , Nav.pushUrl model.key <| "/"
                     ]
                 )
@@ -233,37 +213,13 @@ update msg model =
                 ( { model | session = session }, Cmd.none )
 
         Voted id ->
-            let
-                cmd =
-                    Http.post
-                        { url = "/vote"
-                        , body = Http.jsonBody (encodeVote id model.session)
-                        , expect = Http.expectJson RecievedMovies Movie.decodeMovies
-                        }
-            in
-            ( model, cmd )
+            ( model, Api.vote id model.session )
 
         AddedLibraryMovie movie ->
-            let
-                cmd =
-                    Http.post
-                        { url = "/library/add"
-                        , body = Http.jsonBody (encodeVote movie.id model.session)
-                        , expect = Http.expectJson RecievedMovies Movie.decodeMovies
-                        }
-            in
-            ( model, cmd )
+            ( model, Api.libraryAdd movie.id model.session )
 
         RemovedLibraryMovie movie ->
-            let
-                cmd =
-                    Http.post
-                        { url = "/library/remove"
-                        , body = Http.jsonBody (encodeVote movie.id model.session)
-                        , expect = Http.expectJson RecievedMovies Movie.decodeMovies
-                        }
-            in
-            ( model, cmd )
+            ( model, Api.libraryRemove movie.id model.session )
 
         AddedFindMovie movie ->
             let
@@ -307,7 +263,7 @@ update msg model =
                 cmd =
                     case user of
                         Ok value ->
-                            sendUserId (encodeUserId value.id)
+                            sendUserId (Api.encodeUserId value.id)
 
                         Err _ ->
                             Cmd.none
@@ -394,25 +350,3 @@ subscriptions _ =
 decodeFlags : Decode.Decoder Int
 decodeFlags =
     Decode.field "id" Decode.int
-
-
-encodeUser : User -> Encode.Value
-encodeUser user =
-    Encode.object
-        [ ( "name", Encode.string user.name )
-        ]
-
-
-encodeUserId : Int -> Encode.Value
-encodeUserId id =
-    Encode.object
-        [ ( "id", Encode.int id )
-        ]
-
-
-encodeVote : Int -> Session -> Encode.Value
-encodeVote movieId session =
-    Encode.object
-        [ ( "movieId", Encode.int movieId )
-        , ( "userId", Encode.int session.user.id )
-        ]
