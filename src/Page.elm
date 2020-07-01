@@ -21,23 +21,23 @@ jumbotron model =
                 Home ->
                     "Having Trouble Finding a Movie?"
 
-                Find ->
+                MovieSession _ ->
                     "Vote for a Movie"
 
-                NewFind ->
+                NewMovieSession ->
                     "Creating New Session"
 
-                Library ->
+                Library _ ->
                     "Your Library"
-
-                WatchLater ->
-                    "Movies to Watch Later"
 
                 Login ->
                     "Login"
 
-                Results ->
+                Results _ ->
                     "Results"
+
+                Models.User user ->
+                    user.name
 
         paragraph =
             case model.page of
@@ -67,22 +67,22 @@ navbar model =
                 Home ->
                     [ NavLink "Library" "/library", NavLink "Find" "/find" ]
 
-                Find ->
+                MovieSession _ ->
                     [ NavLink "Library" "/library" ]
 
-                NewFind ->
+                NewMovieSession ->
                     [ NavLink "Library" "/library", NavLink "Find" "/find" ]
 
-                Library ->
+                Library _ ->
                     [ NavLink "Find" "/find" ]
-
-                WatchLater ->
-                    [ NavLink "Library" "/library", NavLink "Find" "/find" ]
 
                 Login ->
                     [ NavLink "Library" "/library", NavLink "Find" "/find" ]
 
-                Results ->
+                Results _ ->
+                    [ NavLink "Library" "/library", NavLink "Find" "/find" ]
+
+                Models.User user ->
                     [ NavLink "Library" "/library", NavLink "Find" "/find" ]
 
         maybeUser =
@@ -109,23 +109,23 @@ titleOf page =
         Home ->
             ""
 
-        Find ->
+        MovieSession _ ->
             " | Find"
 
-        NewFind ->
+        NewMovieSession ->
             " | New Session"
 
-        Library ->
+        Library _ ->
             " | Library"
-
-        WatchLater ->
-            " | Watch Later"
 
         Login ->
             " | Login"
 
-        Results ->
+        Results _ ->
             " | Results"
+
+        Models.User user ->
+            user.name
 
 
 content : Model -> Html Msg
@@ -134,22 +134,19 @@ content model =
         Home ->
             homeView model
 
-        Find ->
-            findView model
+        MovieSession _ ->
+            movieSessionView model
 
-        NewFind ->
-            findFormView model
+        NewMovieSession ->
+            movieSessionFormView model
 
-        Library ->
+        Library _ ->
             libraryView model
-
-        WatchLater ->
-            laterView model
 
         Login ->
             loginView model
 
-        Results ->
+        Results _ ->
             resultsView model
 
 
@@ -178,23 +175,18 @@ homeView model =
                     [ h1 [ class "text-center" ] [ text "Start a Movie Finding Session" ]
                     , p [] [ text "To start a movie finding session just click here! Once you start one, I will give you a link to share with you family! This session will last 30 min. If you are the creator of it, you may stop it at any time." ]
                     ]
-                , div [ class "col-sm-4" ]
-                    [ h1 [ class "text-center" ] [ text "Add to your Watch Later" ]
-                    , p [] [ text "If you find a movie that you think you might enjoy, just add it to your watch later!" ]
-                    ]
                 ]
             ]
         , br [] []
         , div [ class "d-flex" ]
             [ div [ class "flex-fill text-center" ] [ a [ class "p-3 btn btn-outline-success", href "/library" ] [ text "Go to your Library" ] ]
             , div [ class "flex-fill text-center" ] [ a [ class "p-3 btn btn-outline-success", href link ] [ text "Start Movie Finding Session" ] ]
-            , div [ class "flex-fill text-center" ] [ a [ class "p-3 btn btn-outline-secondary disabled", href "/later" ] [ text "See Your Watch Later List" ] ]
             ]
         ]
 
 
-findView : Model -> Html Msg
-findView model =
+movieSessionView : Model -> Html Msg
+movieSessionView model =
     let
         pageContent =
             case model.movies of
@@ -210,7 +202,7 @@ findView model =
                             div [ class "p-5" ]
                                 [ searchBar model.session.search
                                 , button [ class "btn btn-danger center", onClick SessionEnded ] [ text "End Session" ]
-                                , div [ class "container row" ] (List.map (\movie -> Movie.findView movie) movies)
+                                , div [ class "container row" ] (List.map (\movie -> Movie.movieSessionView movie) movies)
                                 ]
 
                 _ ->
@@ -245,8 +237,8 @@ loginView model =
         ]
 
 
-findFormView : Model -> Html Msg
-findFormView model =
+movieSessionFormView : Model -> Html Msg
+movieSessionFormView model =
     let
         suggestions =
             case model.movies of
@@ -254,20 +246,20 @@ findFormView model =
                     h3 [] [ text "Loading" ]
 
                 Success movies ->
-                    div [] (List.map (\movie -> Movie.findFormView movie) movies)
+                    div [] (List.map (\movie -> Movie.movieSessionView movie) movies)
 
                 _ ->
                     h3 [] [ text "Failed to load movies for some reason..." ]
 
         currentMovies =
             case model.session.form of
-                FindForm movies ->
+                MovieSessionForm movies ->
                     div []
                         (List.map
                             (\movie ->
                                 p []
                                     [ text movie.title
-                                    , button [ class "btn btn-danger ml-2", onClick (RemovedFindMovie movie) ] [ text "Remove" ]
+                                    , button [ class "btn btn-danger ml-2", onClick (RemovedMovieSessionMovie movie) ] [ text "Remove" ]
                                     ]
                             )
                             movies
@@ -386,7 +378,7 @@ searchBar search =
     in
     div [ class "input-group mb-3" ]
         [ input [ class "form-control", placeholder "Search...", onInput SearchChanged ] []
-        , div [ class "input-group-append" ] [ button [ class "btn btn-outline-primary", value searchOf, onClick SubmittedSearch ] [ text "Find" ] ]
+        , div [ class "input-group-append" ] [ button [ class "btn btn-outline-primary", value searchOf, onClick SubmittedSearch ] [ text "Current Find Session" ] ]
         ]
 
 

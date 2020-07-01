@@ -22,7 +22,7 @@ createSession movies =
 vote : Int -> Session -> Cmd Msg
 vote id session =
     Http.post
-        { url = Endpoint.vote
+        { url = Endpoint.vote -1
         , body = Http.jsonBody (encodeVote id session)
         , expect = Http.expectJson RecievedMovies Movie.decodeMovies
         }
@@ -31,9 +31,25 @@ vote id session =
 stopSession : Cmd Msg
 stopSession =
     Http.post
-        { url = Endpoint.stopSession
+        { url = Endpoint.stopSession -1
         , body = Http.emptyBody
         , expect = Http.expectJson RecievedBestMovie Movie.decodeMovies
+        }
+
+
+results : Int -> Cmd Msg
+results id =
+    Http.get
+        { url = Endpoint.results id
+        , expect = Http.expectJson RecievedBestMovie Movie.decodeMovies
+        }
+
+
+releases : Cmd Msg
+releases =
+    Http.get
+        { url = Endpoint.releases
+        , expect = Http.expectJson RecievedMovies Movie.decodeMovies
         }
 
 
@@ -67,10 +83,18 @@ login form =
         }
 
 
+user : Int -> Cmd Msg
+user id =
+    Http.get
+        { url = Endpoint.user id
+        , expect = Http.expectJson RecievedUser User.decodeUser
+        }
+
+
 libraryAdd : Int -> Session -> Cmd Msg
 libraryAdd id session =
     Http.post
-        { url = Endpoint.libraryAdd
+        { url = Endpoint.libraryAdd -1
         , body = Http.jsonBody (encodeVote id session)
         , expect = Http.expectJson RecievedMovies Movie.decodeMovies
         }
@@ -79,8 +103,16 @@ libraryAdd id session =
 libraryRemove : Int -> Session -> Cmd Msg
 libraryRemove id session =
     Http.post
-        { url = Endpoint.libraryRemove
+        { url = Endpoint.libraryRemove -1
         , body = Http.jsonBody (encodeVote id session)
+        , expect = Http.expectJson RecievedMovies Movie.decodeMovies
+        }
+
+
+libraryMovies : Cmd Msg
+libraryMovies =
+    Http.get
+        { url = Endpoint.libraryMovies -1
         , expect = Http.expectJson RecievedMovies Movie.decodeMovies
         }
 
@@ -90,9 +122,9 @@ libraryRemove id session =
 
 
 encodeUser : User -> Encode.Value
-encodeUser user =
+encodeUser user_ =
     Encode.object
-        [ ( "name", Encode.string user.name )
+        [ ( "name", Encode.string user_.name )
         ]
 
 

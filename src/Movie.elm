@@ -35,8 +35,8 @@ laterView movie =
         ]
 
 
-findView : Movie -> Html Msg
-findView movie =
+movieSessionView : Movie -> Html Msg
+movieSessionView movie =
     div [ class "p-3 m-3 shadow text-center rounded", style "width" "20rem" ]
         [ h3 [] [ text movie.title ]
         , img [ src ("http://image.tmdb.org/t/p/w185//" ++ movie.pic) ] []
@@ -45,12 +45,12 @@ findView movie =
         ]
 
 
-findFormView : Movie -> Html Msg
-findFormView movie =
+movieSessionFormView : Movie -> Html Msg
+movieSessionFormView movie =
     div [ class "p-3 m-3 shadow text-center rounded", style "width" "20rem" ]
         [ h3 [] [ text movie.title ]
         , img [ src ("http://image.tmdb.org/t/p/w185//" ++ movie.pic) ] []
-        , button [ class "btn btn-primary w-50 mt-2 font-weight-bold", onClick (AddedFindMovie movie) ] [ text "Add" ]
+        , button [ class "btn btn-primary w-50 mt-2 font-weight-bold", onClick (AddedMovieSessionMovie movie) ] [ text "Add" ]
         ]
 
 

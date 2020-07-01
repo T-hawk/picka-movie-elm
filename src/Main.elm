@@ -69,7 +69,7 @@ update msg model =
             let
                 movies =
                     case model.session.form of
-                        FindForm value ->
+                        MovieSessionForm value ->
                             value
 
                         _ ->
@@ -92,10 +92,10 @@ update msg model =
                         Ok value ->
                             case value of
                                 "OK" ->
-                                    ( { model | page = Find }, "/find" )
+                                    ( { model | page = MovieSession }, "/find" )
 
                                 "ACTIVE FINDER" ->
-                                    ( { model | page = Find }, "/find" )
+                                    ( { model | page = MovieSession }, "/find" )
 
                                 _ ->
                                     ( { model | page = Home }, "/#" )
@@ -221,11 +221,11 @@ update msg model =
         RemovedLibraryMovie movie ->
             ( model, Api.libraryRemove movie.id model.session )
 
-        AddedFindMovie movie ->
+        AddedMovieSessionMovie movie ->
             let
                 movies =
                     case model.session.form of
-                        FindForm value ->
+                        MovieSessionForm value ->
                             value
 
                         _ ->
@@ -239,22 +239,22 @@ update msg model =
                         [ movie ]
 
                 session =
-                    Session model.session.user model.session.search (FindForm (List.append movies appendMovie)) []
+                    Session model.session.user model.session.search (MovieSessionForm (List.append movies appendMovie)) []
             in
             ( { model | session = session }, Cmd.none )
 
-        RemovedFindMovie movie ->
+        RemovedMovieSessionMovie movie ->
             let
                 movies =
                     case model.session.form of
-                        FindForm value ->
+                        MovieSessionForm value ->
                             value
 
                         _ ->
                             []
 
                 session =
-                    Session model.session.user model.session.search (FindForm (remove movie movies)) []
+                    Session model.session.user model.session.search (MovieSessionForm (remove movie movies)) []
             in
             ( { model | session = session }, Cmd.none )
 

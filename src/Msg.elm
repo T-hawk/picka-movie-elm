@@ -19,8 +19,8 @@ type Msg
     | Voted Int
     | AddedLibraryMovie Movie
     | RemovedLibraryMovie Movie
-    | AddedFindMovie Movie
-    | RemovedFindMovie Movie
+    | AddedMovieSessionMovie Movie
+    | RemovedMovieSessionMovie Movie
     | SearchChanged String
     | RecievedUser (Result Http.Error User)
     | RecievedBestMovie (Result Http.Error (List Movie))

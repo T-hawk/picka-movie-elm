@@ -1,5 +1,6 @@
 module Router exposing (..)
 
+import Api
 import Http
 import Models exposing (..)
 import Movie
@@ -14,12 +15,12 @@ parseUrl : Parser.Parser (Page -> a) a
 parseUrl =
     oneOf
         [ map Home top
-        , map Find (s "find")
-        , map NewFind (s "newsession")
-        , map Library (s "library")
-        , map WatchLater (s "later")
+        , map User (s "user" </> int)
+        , map MovieSession (s "find" </> int)
+        , map NewMovieSession (s "newsession")
+        , map Library (s "library" </> int)
         , map Login (s "login")
-        , map Results (s "results")
+        , map Results (s "results" </> int)
         ]
 
 
@@ -47,61 +48,40 @@ updateView url model =
 
         returnModel =
             case page of
-                Login ->
-                    { model | page = page, session = session, movies = None }
-
-                Find ->
-                    { model | page = page, session = session, movies = None }
-
-                NewFind ->
+                NewMovieSession ->
                     { model | page = page, session = session, movies = Loading }
 
-                Home ->
-                    { model | page = page, session = session, movies = None }
-
-                Library ->
+                Library _ ->
                     { model | page = page, session = session, movies = Loading }
 
-                WatchLater ->
-                    { model | page = page, session = session, movies = None }
-
-                Results ->
+                Results _ ->
                     { model | page = page, session = session, movies = Loading }
+
+                _ ->
+                    { model | page = page, session = session, movies = None }
 
         cmd =
             case page of
-                Home ->
-                    Cmd.none
-
-                Login ->
-                    Cmd.none
-
-                Find ->
+                MovieSession ->
                     Http.get
                         { url = "/api/session/movies"
                         , expect = Http.expectJson RecievedMovies Movie.decodeMovies
                         }
 
-                NewFind ->
-                    Http.get
-                        { url = "/releases"
-                        , expect = Http.expectJson RecievedMovies Movie.decodeMovies
-                        }
+                User id ->
+                    Api.user id
 
-                Library ->
-                    Http.get
-                        { url = "/api/library/movies"
-                        , expect = Http.expectJson RecievedMovies Movie.decodeMovies
-                        }
+                Results id ->
+                    Api.results id
 
-                WatchLater ->
+                NewMovieSession ->
+                    Api.releases
+
+                Library _ ->
+                    Api.libraryMovies
+
+                _ ->
                     Cmd.none
-
-                Results ->
-                    Http.get
-                        { url = "/get/results"
-                        , expect = Http.expectJson RecievedBestMovie Movie.decodeMovies
-                        }
     in
     ( returnModel
     , Cmd.batch

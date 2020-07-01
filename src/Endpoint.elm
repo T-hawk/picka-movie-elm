@@ -5,7 +5,7 @@ module Endpoint exposing (..)
 
 user : Int -> String
 user id =
-    "/api/results/" ++ String.fromInt id
+    "/api/user/" ++ String.fromInt id
 
 
 login =
@@ -29,16 +29,19 @@ search query =
 -- LIBRARY
 
 
-libraryAdd =
-    "/api/library/add"
+libraryAdd : Int -> String
+libraryAdd id =
+    "/api/library/" ++ String.fromInt id ++ "/add"
 
 
-libraryRemove =
-    "/api/library/remove"
+libraryRemove : Int -> String
+libraryRemove id =
+    "/api/library/" ++ String.fromInt id ++ "/remove"
 
 
-libraryMovies =
-    "/api/library/movies"
+libraryMovies : Int -> String
+libraryMovies id =
+    "/api/library/" ++ String.fromInt id ++ "/movies"
 
 
 
@@ -49,17 +52,21 @@ createSession =
     "/api/session/create"
 
 
-vote =
-    "/api/session/vote"
+vote : Int -> String
+vote id =
+    "/api/session/" ++ String.fromInt id ++ "/vote"
 
 
-sessionMovies =
-    "/api/session/movies"
+sessionMovies : Int -> String
+sessionMovies id =
+    "/api/session/" ++ String.fromInt id ++ "/movies"
 
 
-stopSession =
-    "/api/session/stop"
+stopSession : Int -> String
+stopSession id =
+    "/api/session/" ++ String.fromInt id ++ "/stop"
 
 
-results =
-    "/api/results/movies"
+results : Int -> String
+results id =
+    "/api/results/" ++ String.fromInt id

@@ -18,18 +18,18 @@ type alias Model =
 
 type Page
     = Home
-    | Find
-    | Library
-    | WatchLater
+    | User Int
+    | MovieSession Int
+    | Library Int
     | Login
-    | NewFind
-    | Results
+    | NewMovieSession
+    | Results Int
 
 
 type Form
     = NoForm
     | UserForm FormUser
-    | FindForm (List Movie)
+    | MovieSessionForm (List Movie)
 
 
 type Search
