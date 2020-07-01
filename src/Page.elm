@@ -1,5 +1,6 @@
 module Page exposing (..)
 
+import Alert exposing (Alert(..))
 import Browser
 import Browser.Navigation as Nav
 import Html exposing (..)
@@ -398,6 +399,11 @@ navlink link =
     li [ class "nav-item" ] [ a [ href link.url, class "nav-link" ] [ text link.text ] ]
 
 
+alertsView : List Alert -> Html msg
+alertsView alerts =
+    div [] (List.map alertView alerts)
+
+
 alertView : Alert -> Html msg
 alertView alert =
     let
@@ -411,8 +417,5 @@ alertView alert =
 
                 Positive string ->
                     ( "alert alert-success", string )
-
-                NoAlert ->
-                    ( "", "" )
     in
     div [ class (Tuple.first divContent ++ " m-5") ] [ text (Tuple.second divContent) ]

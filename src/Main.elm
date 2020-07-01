@@ -1,5 +1,6 @@
 port module Main exposing (..)
 
+import Alert exposing (Alert(..))
 import Browser
 import Browser.Navigation as Nav
 import Html exposing (..)
@@ -45,7 +46,7 @@ init flags url key =
                     -1
 
         model =
-            { page = Home, movies = None, url = url, key = key, session = Session (User "" userId) NoSearch NoForm NoAlert }
+            { page = Home, movies = None, url = url, key = key, session = Session (User "" userId) NoSearch NoForm [] }
     in
     updateView model.url model
 
@@ -170,7 +171,7 @@ update msg model =
         SearchChanged string ->
             let
                 session =
-                    Session model.session.user (SearchOf string) model.session.form NoAlert
+                    Session model.session.user (SearchOf string) model.session.form []
             in
             ( { model | session = session }, Cmd.none )
 
@@ -188,13 +189,18 @@ update msg model =
 
         SubmittedForm ->
             let
-                user =
-                    case model.session.form of
-                        UserForm value ->
-                            value
+                alerts =
+                    User.validUser
+                        (case model.session.form of
+                            UserForm value ->
+                                value
 
-                        _ ->
-                            User.defaultFormUser
+                            _ ->
+                                User.defaultFormUser
+                        )
+
+                _ =
+                    Debug.log "alerts" alerts
 
                 encodedUser =
                     case model.session.form of
@@ -204,8 +210,8 @@ update msg model =
                         _ ->
                             User.encodeUser User.defaultFormUser
             in
-            if user.password == user.passwordConf then
-                ( { model | page = Home, session = Models.updateAlert model.session NoAlert }
+            if List.isEmpty alerts then
+                ( { model | page = Home, session = Models.updateAlerts model.session [] }
                 , Cmd.batch
                     [ Http.post
                         { url = "/api/login"
@@ -222,9 +228,9 @@ update msg model =
                         model.session
 
                     session =
-                        { oldSession | alert = Danger "Passwords do not match" }
+                        { oldSession | alerts = alerts }
                 in
-                ( { model | session = Models.updateAlert model.session (Danger "Passwords do not match") }, Cmd.none )
+                ( { model | session = session }, Cmd.none )
 
         Voted id ->
             let
@@ -277,7 +283,7 @@ update msg model =
                         [ movie ]
 
                 session =
-                    Session model.session.user model.session.search (FindForm (List.append movies appendMovie)) NoAlert
+                    Session model.session.user model.session.search (FindForm (List.append movies appendMovie)) []
             in
             ( { model | session = session }, Cmd.none )
 
@@ -292,7 +298,7 @@ update msg model =
                             []
 
                 session =
-                    Session model.session.user model.session.search (FindForm (remove movie movies)) NoAlert
+                    Session model.session.user model.session.search (FindForm (remove movie movies)) []
             in
             ( { model | session = session }, Cmd.none )
 
@@ -367,14 +373,14 @@ update msg model =
 view : Model -> Browser.Document Msg
 view model =
     let
-        alert =
-            Page.alertView model.session.alert
+        alerts =
+            Page.alertsView model.session.alerts
     in
     { title = "Picka Movie " ++ Page.titleOf model.page
     , body =
         [ Page.jumbotron model
         , Page.navbar model
-        , alert
+        , alerts
         , Page.content model
         ]
     }

@@ -1,5 +1,6 @@
 module Models exposing (..)
 
+import Alert exposing (Alert(..))
 import Browser.Navigation as Nav
 import Http
 import Url
@@ -40,7 +41,7 @@ type alias Session =
     { user : User
     , search : Search
     , form : Form
-    , alert : Alert
+    , alerts : List Alert
     }
 
 
@@ -68,13 +69,6 @@ type Field
     | PasswordConf
 
 
-type Alert
-    = Warning String
-    | Danger String
-    | Positive String
-    | NoAlert
-
-
-updateAlert : Session -> Alert -> Session
-updateAlert session alert =
-    { session | alert = alert }
+updateAlerts : Session -> List Alert -> Session
+updateAlerts session alerts =
+    { session | alerts = alerts }
